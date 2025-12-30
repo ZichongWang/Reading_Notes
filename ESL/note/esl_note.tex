@@ -18,6 +18,12 @@
 \usepackage{multirow}
 \usepackage{url}
 \usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+}
 \let\bf\mathbf
 % --- Layout Settings ---
 \geometry{left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm}
@@ -50,6 +56,9 @@
 \begin{document}
 
 \maketitle
+
+\tableofcontents
+\clearpage
 
 % --- Section 1: Setup ---
 \section{Chap 3: Linear Methods for Regression}
@@ -97,31 +106,238 @@ Why assume only know $\bm X$, but not $\bm y$?
 
 We have a \textit{challenger} linear estimator $\tilde{\beta} = \bm C \bm y$, where $\bm C = (\bm X^T \bm X)^{-1} \bm X^T + \bm D$, a modification of OLS estimator.
 Ensure it's unbiased:
-
 \begin{align*}
     \mathbb E(\tilde{\beta}) &= \mathbb{E}(\bm C \bm y) \\
     &= \bm C \mathbb E(\bm y) = ((\bm X^T \bm X)^{-1} \bm X^T + \bm D) \bm X \beta \\
     &= \beta + \bm D \bm X \beta\\
     &= \beta
 \end{align*}
-
 Meaning $\bm D \bm X = 0$.
 
 Now, compute the variance:
-
 \begin{align*}
     \text{Var}(\tilde{\beta}) &= \text{Var}(\bm C \bm y) \\
     &= \bm C \text{Var}(\bm y) \bm C^T \\
     &= \sigma^2 \bm C \bm C^T \\
     &= \sigma^2 ((\bm X^T \bm X)^{-1} \bm X^T + \bm D) ((\bm X^T \bm X)^{-1} \bm X^T + \bm D)^T \\
     &= \sigma^2 ((\bm X^T \bm X)^{-1} + \bm D \bm D^T)\\
-    &= \text{Var}(\hat{\beta}) + \sigma^2 \bm D \bm D^T
+    &= \text{Var}(\hat{\beta}) + \sigma^2 \bm D \bm D^T\\
     &\ge \text{Var}(\hat{\beta})
 \end{align*}
 
 \subsection{QR decomposition}
 
+Any real squared matrix $\bm A$ can be decomposed as $\bm A = \bm Q \bm R$, where $\bm Q$ is orthogonal matrix ($\bm Q^T \bm Q = \bm I$), and $\bm R$ is upper triangular matrix.
 
+Any rectangular matrix $\bm A \in \mathbb R^{m \times n}$ ($m \ge n$), we can decompose it as $\bm A = \bm Q \bm R$, where $\bm Q$ is $m \times m$ orthogonal matrix, and $\bm R$ is $m \times n$ upper triangular matrix (the last $m-n$ rows are all zero).
+It can be regarded as $\bm A = \bm Q \bm R=[\bm Q_1\quad \bm Q_2]\begin{bmatrix} \bm{R}_1 \\ \bm{0} \end{bmatrix} = \bm{Q}_1\bm{R}_1,$
+$\text{where } \bm{Q}_1 \in \mathbb{R}^{m \times n}, \bm{Q}_2 \in \mathbb{R}^{m \times (m-n)}, \bm{R}_1 \in \mathbb{R}^{n \times n} \text{ which is upper triangular}$.
+
+If $\bm A$ have $k$ linearly independent columns, then first $k$ columns of $\bm Q$ form an orthonormal basis of the column space of $\bm A$.
+The fact that any column $k$ of $\bm A$ only depends on the first $k$ columns of $\bm Q$ corresponds to the triangular form of $\bm R$.
+
+
+QR decomposition can be calculated using Gram-Schmidt process, or using Householder reflections. In practice, Householder reflections are more stable and efficient.
+
+\subsubsection{Application to Least Squared}
+In linear least squares problems, 
+we aim to find a vector $\bm{x}$ that minimizes the Euclidean norm of the residual for an overdetermined system $\bm{Ax} \approx \bm{b}$, where $\bm{A} \in \mathbb{R}^{m \times n}$ and $m \ge n$.
+The goal is to solve:$$\min_{\bm{x}} \|\bm{Ax} - \bm{b}\|_2$$Using the Full QR Decomposition, 
+we substitute $\bm{A} = \bm{Q} \begin{bmatrix} \bm{R}_1 \\ \bm{0} \end{bmatrix}$:$$\|\bm{Ax} - \bm{b}\|_2 = \left\| \bm{Q} \begin{bmatrix} \bm{R}_1 \\ \bm{0} \end{bmatrix} \bm{x} - \bm{b} \right\|_2$$
+Since multiplying by an orthogonal matrix $\bm{Q}$ preserves the Euclidean norm, 
+we can left-multiply the entire expression by $\bm{Q}^T$:$$\|\bm{Ax} - \bm{b}\|_2 = \left\| \begin{bmatrix} \bm{R}_1 \\ \bm{0} \end{bmatrix} \bm{x} - \bm{Q}^T \bm{b} \right\|_2$$
+If we partition $\bm{Q}^T \bm{b}$ into two components—$\bm{c}_1 \in \mathbb{R}^n$ and $\bm{c}_2 \in \mathbb{R}^{m-n}$:$$\left\| \begin{bmatrix} \bm{R}_1\bm{x} - \bm{c}_1 \\ -\bm{c}_2 \end{bmatrix} \right\|_2^2 = \|\bm{R}_1\bm{x} - \bm{c}_1\|_2^2 + \|\bm{c}_2\|_2^2$$
+
+To minimize the total error, we must make the first term zero. 
+The least squares solution is found by solving the square, upper-triangular system:$$\bm{R}_1 \bm{x} = \bm{c}_1$$
+Since $\bm R_1$ is upper triangular, we can efficiently solve this system using back substitution, \textbf{that's how we solve linear equations manually in algebra class}!
+The remaining term $\|\bm{c}_2\|_2$ represents the minimum residual norm (the "error" of the fit).
+
+
+\subsubsection{About orthogonal matrix}
+
+Let \(\bm{Q}\in\mathbb{R}^{n\times n}\) be an orthogonal matrix.  
+Write \(\bm{Q}\) in terms of its column vectors:
+\[
+\bm{Q}=\big[\bm{q}_1\; \bm{q}_2\; \cdots\; \bm{q}_n\big], 
+\qquad 
+\bm{q}_i^{\top}\bm{q}_j=\delta_{ij}.
+\]
+Then
+\[
+\bm{Q}^{\top}=
+\begin{bmatrix}
+\bm{q}_1^{\top}\\
+\bm{q}_2^{\top}\\
+\vdots\\
+\bm{q}_n^{\top}
+\end{bmatrix}.
+\] 
+
+\paragraph{Computation of \(\bm{Q}^{\top}\bm{Q}\).}
+\[
+\bm{Q}^{\top}\bm{Q}
+=
+\begin{bmatrix}
+\bm{q}_1^{\top}\\
+\bm{q}_2^{\top}\\
+\vdots\\
+\bm{q}_n^{\top}
+\end{bmatrix}
+\big[\bm{q}_1\; \bm{q}_2\; \cdots\; \bm{q}_n\big]
+=
+\begin{bmatrix}
+\bm{q}_1^{\top}\bm{q}_1 & \bm{q}_1^{\top}\bm{q}_2 & \cdots & \bm{q}_1^{\top}\bm{q}_n\\
+\bm{q}_2^{\top}\bm{q}_1 & \bm{q}_2^{\top}\bm{q}_2 & \cdots & \bm{q}_2^{\top}\bm{q}_n\\
+\vdots & \vdots & \ddots & \vdots\\
+\bm{q}_n^{\top}\bm{q}_1 & \bm{q}_n^{\top}\bm{q}_2 & \cdots & \bm{q}_n^{\top}\bm{q}_n
+\end{bmatrix}.
+\]
+Using \(\bm{q}_i^{\top}\bm{q}_j=\delta_{ij}\),
+\[
+\bm{Q}^{\top}\bm{Q}
+=
+\begin{bmatrix}
+1 & 0 & \cdots & 0\\
+0 & 1 & \cdots & 0\\
+\vdots & \vdots & \ddots & \vdots\\
+0 & 0 & \cdots & 1
+\end{bmatrix}
+= \bm{I}.
+\]
+
+\paragraph{Computation of \(\bm{Q}\bm{Q}^{\top}\).}
+\[
+\bm{Q}\bm{Q}^{\top}
+=
+\big[\bm{q}_1\; \bm{q}_2\; \cdots\; \bm{q}_n\big]
+\begin{bmatrix}
+\bm{q}_1^{\top}\\
+\bm{q}_2^{\top}\\
+\vdots\\
+\bm{q}_n^{\top}
+\end{bmatrix}
+=
+\bm{q}_1\bm{q}_1^{\top}
++
+\bm{q}_2\bm{q}_2^{\top}
++
+\cdots
++
+\bm{q}_n\bm{q}_n^{\top}
+=
+\sum_{k=1}^{n}\bm{q}_k\bm{q}_k^{\top}.
+\]
+For any \(\bm{x}\in\mathbb{R}^{n}\),
+\[
+(\bm{Q}\bm{Q}^{\top})\bm{x}
+=
+\sum_{k=1}^{n}\bm{q}_k(\bm{q}_k^{\top}\bm{x})
+= \bm{x},
+\]
+since \(\{\bm{q}_1,\ldots,\bm{q}_n\}\) is an orthonormal basis of \(\mathbb{R}^{n}\).
+Hence
+\[
+\bm{Q}\bm{Q}^{\top}=\bm{I}.
+\]
+
+Therefore, for an orthogonal matrix \(\bm{Q}\),
+\[
+\bm{Q}^{\top}\bm{Q}=\bm{Q}\bm{Q}^{\top}=\bm{I}.
+\]
+
+\subsection{Multiple testing in forward selection}
+ESL page 60:
+\begin{quote}
+    Other more traditional packages base the selection on F -statistics, adding “significant” terms, and dropping “non-significant” terms. These are out of fashion, since they do not take proper account of the multiple testing issues.
+\end{quote}
+
+Assume we have $p$ candidate features, and already selected $k$ features.
+When considering adding a new feature, we are actually performing $p-k$ hypothesis tests (each test for one feature).
+Even the rest $p-k$ features are all noise, with significance level $\alpha$, we still have a probability of $1-(1-\alpha)^{p-k}$ to incorrectly add at least one noise feature.
+
+\subsection{Ridge regression}
+
+Answer questions: why two forms are equivalent? Why not equivariant under scaling of the inputs? What is a good practice for it?
+df of ridge? In the case of orthogonal inputs, why $\hat \beta^{\text{ridge}} = \hat \beta / (1+\lambda)$?
+
+Ridge regression shrinks the regression coefficients by imposing a penalty on their size:
+$$
+\hat \beta^{\text{ridge}} = \arg\min_{\beta} \left\{ \sum_{i=1}^N (y_i - \beta_0 - \sum_{j=1}^p x_{ij} \beta_j)^2 + \lambda \sum_{j=1}^p \beta_j^2 \right\}
+$$
+and is equivalent to 
+\begin{align*}
+    \hat \beta^{\text{ridge}} &= \arg\min_{\beta} \sum_{i=1}^N (y_i - \beta_0 - \sum_{j=1}^p x_{ij} \beta_j)^2 \\
+    &\text{subject to } \sum_{j=1}^p \beta_j^2 \le t
+\end{align*}
+And there is a one-to-one correspondence between $\lambda$ and $t$.
+\subsubsection{Equivalence of two forms}
+First, take a review of \textbf{KKT conditions}.
+
+Condider a minimization problem with both equality and inequality constraints:
+\begin{align*}
+    \min_{\bm x} & f(\bm x) \\
+    \text{subject to } & g_i(\bm x) \le 0,
+    & i = 1, \ldots, m \\
+    & h_j(\bm x) = 0,
+    & j = 1, \ldots, l
+\end{align*}
+And the lagrangian function is:
+$$
+L(\bm x, \bm \lambda, \bm \mu) = f(\bm x) + \sum_{i=1}^m \lambda_i g_i(\bm x) + \sum_{j=1}^l \mu_j h_j(\bm x)
+$$
+If $\bm x^*$ is a local minimum, then there exist multipliers $\lambda_i^* \ge 0$ and $\mu_j^*$ such that the following conditions hold:
+\begin{itemize}
+    \item \textbf{Stationary} 
+    $$\nabla_x L(\bm x^*, \bm \lambda^*, \bm \mu^*) = 0$$
+    
+    \item \textbf{Primal feasibility}
+    $$g_i(\bm x^*) \le 0, \quad i = 1, \ldots, m$$
+    $$h_j(\bm x^*) = 0, \quad j = 1, \ldots, l$$
+    The gradient can be regarded as the force to push a particle, primal stationary means the force of $\partial f(\bm x^*)$ is balanced by a linear sum of forces from constraints.
+    \item \textbf{Dual feasibility}
+    $$\lambda_i^* \ge 0, \quad i = 1, \ldots, m$$
+    All the $\partial g_i(\bm x^*)$ forces must be one-sided, pointing inwards into the feasible set for $\bm x$.
+    \item \textbf{Complementary slackness}
+    $$\lambda_i^* g_i(\bm x^*) = 0, \quad i = 1, \ldots, m$$
+    The force only activated when the particle is on the boundary of feasible set.
+\end{itemize}
+
+In ridge regression, we have:
+$$
+\mathcal L = \| \bm Y - \bm X \beta \|_2^2 + \alpha (\| \beta \|_2^2 - t)\\
+$$
+According to stationary condition:
+$$
+\nabla_\beta \mathcal L = -2 \bm X^T (\bm Y - \bm X \beta) + 2 \alpha \beta = 0
+$$
+On the other hand, solving the unconstrained form is
+$$
+\nabla_\beta \left( \| \bm Y - \bm X \beta \|_2^2 + \lambda \| \beta \|_2^2 \right) = -2 \bm X^T (\bm Y - \bm X \beta) + 2 \lambda \beta = 0
+$$
+Thus, if we set $\lambda = \alpha$, the two forms are equivalent. 
+
+One step further, according to complementary slackness:
+$$
+\alpha (\| \beta \|_2^2 - t) = 0
+$$
+\textbf{From unconstrained form, given $\lambda$}, we can solve $\beta$, denote $\beta(\lambda)$, and define $t(\lambda) = \| \beta(\lambda) \|_2^2.$
+Then, $\beta(\lambda)$ is also the solution of constrained form with $t = t(\lambda)$ (apparently it's on the boundary, and the coefficient $\alpha = \lambda$).
+
+\textbf{From the constrained form, given $t$}, we can also solve $\beta$, denote $\beta(t)$. 
+\begin{itemize}
+    \item If $\| \beta(t) \|_2^2 < t$, then according to complementary slackness, $\alpha = 0$, which means no penalty, $\lambda=0$, back to OLS.
+    \item If $\| \beta(t) \|_2^2 = t$, the boundary is effective, correspond to some $\alpha > 0$, and $\lambda = \alpha$.
+\end{itemize}
+
+\subsection{Bayesian view}
+
+
+
+
+
+
+\newpage
 \begin{thebibliography}{9}
 \bibitem{wiki_gauss}
 Wikipedia contributors, "Gauss–Markov theorem," \textit{Wikipedia, The Free Encyclopedia}, \url{https://en.wikipedia.org/wiki/Gauss%E2%80%93Markov_theorem} (accessed Dec 29, 2025).
