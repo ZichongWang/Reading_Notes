@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999995 (TeX Live 2023/Debian) (preloaded format=xelatex 2025.12.2)  30 DEC 2025 20:51
+This is XeTeX, Version 3.141592653-2.6-0.999995 (TeX Live 2023/Debian) (preloaded format=xelatex 2025.12.2)  31 DEC 2025 14:27
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -679,7 +679,7 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 
 ] [2
 
-] [3] [4] [5] [6] [7]
+] [3] [4] [5] [6] [7] [8] [9]
 
 Package fontspec Warning: Font "FandolFang-Regular" does not contain requested
 (fontspec)                Script "CJK".
@@ -697,25 +697,32 @@ Package fontspec Info: Font family 'FandolFang-Regular(0)' created for font
 (fontspec)             - 'small caps'  (m/sc) with NFSS spec.: 
 
 
-Underfull \hbox (badness 2088) in paragraph at lines 343--344
+Underfull \hbox (badness 2088) in paragraph at lines 458--459
 []\TU/lmr/m/n/10.95 Wikipedia contributors, ”Gauss |\TU/FandolSong-Regular(0)/m/n/10.95 –| \TU/lmr/m/n/10.95 Markov theorem,” \TU/lmr/m/it/10.95 Wikipedia, The Free Encyclope-
  []
 
-[8] (./esl_note.aux)
+[10] (./esl_note.aux)
  ***********
 LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2022/08/05>
  ***********
-Package rerunfilecheck Info: File `esl_note.out' has not changed.
-(rerunfilecheck)             Checksum: E8DC8449B3E7182E542464B1F6E664EB;2016.
+
+
+Package rerunfilecheck Warning: File `esl_note.out' has changed.
+(rerunfilecheck)                Rerun to get outlines right
+(rerunfilecheck)                or use package `bookmark'.
+
+Package rerunfilecheck Info: Checksums for `esl_note.out':
+(rerunfilecheck)             Before: 858A41A80450DFE190D63464D8847BFE;2650
+(rerunfilecheck)             After:  D23B25844A2B29E8B73BE54F532D1CFA;2577.
  ) 
 Here is how much of TeX's memory you used:
- 21791 strings out of 474878
- 499661 string characters out of 5762516
+ 21795 strings out of 474878
+ 499775 string characters out of 5762516
  1934627 words of memory out of 5000000
- 43566 multiletter control sequences out of 15000+600000
+ 43570 multiletter control sequences out of 15000+600000
  569599 words of font info for 99 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
- 93i,13n,97p,408b,906s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 93i,13n,97p,408b,849s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on esl_note.pdf (8 pages).
+Output written on esl_note.pdf (10 pages).

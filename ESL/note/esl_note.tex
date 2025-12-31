@@ -246,6 +246,58 @@ Therefore, for an orthogonal matrix \(\bm{Q}\),
 \bm{Q}^{\top}\bm{Q}=\bm{Q}\bm{Q}^{\top}=\bm{I}.
 \]
 
+\subsubsection{SVD and orthogonal matrix}
+There are two kinds of SVD: full SVD and reduced SVD. Let $\bm X \in \mathbb R ^{N\times p}$, and nomally $N > p$.
+    \begin{itemize}
+        \item \textbf{Full SVD} in standard linear algebra.
+         $$\bm X = \bm U_{\text{full}} \bm D_{\text{full}} \bm V^T$$
+         \begin{itemize}
+            \item $\bm U_{\text{full}} \in \mathbb R^{N \times N}$ is orthogonal matrix, whose columns are eigenvectors of $\bm X \bm X^T$.
+            \item $\bm D_{\text{full}} \in \mathbb R^{N \times p}$ is a rectangular diagonal matrix, and the last $N-p$ rows are all zero.
+            \item $\bm V \in \mathbb R^{p \times p}$ is orthogonal matrix, whose columns are eigenvectors of $\bm X^T \bm X$, and are basis of row space of $\bm X$.
+         \end{itemize}
+        \item \textbf{Reduced SVD} in linear regression. We simply ignore the zero parts of $\bm U$ and $\bm D$.
+        
+        $\bm D$ and $\bm U$ can be seen as
+        \[
+        \bm{D}_{\text{full}} = \begin{bmatrix}
+            d_1 & 0 & \dots \\
+            0 & \ddots & \\
+            \dots & & d_p \\
+            \hline
+            0 & 0 & 0 \\
+            \vdots & \vdots & \vdots \\
+            0 & 0 & 0
+            \end{bmatrix}
+            \begin{matrix}
+            \left.\begin{matrix} \\ \\ \\ \end{matrix}\right\} p \text{ (Non-zero part)} \\
+            \left.\begin{matrix} \\ \\ \\ \end{matrix}\right\} N-p \text{ (All zero part)}
+        \end{matrix}
+        \]
+        \[\mathbf{U}_{\text{full}} = \begin{bmatrix}
+            \mathbf{U}_1 & | & \mathbf{U}_2
+            \end{bmatrix}\]
+        Thus, 
+        \[\begin{aligned}
+        \mathbf{U}_{full} \cdot \mathbf{D}_{full} &= \begin{bmatrix} \mathbf{U}_1 & \mathbf{U}_2 \end{bmatrix} \cdot \begin{bmatrix} \mathbf{D}_p \\ \mathbf{0} \end{bmatrix} \\
+        &= \mathbf{U}_1 \cdot \mathbf{D}_p + \mathbf{U}_2 \cdot \mathbf{0} \\
+        &= \mathbf{U}_1 \cdot \mathbf{D}_p
+        \end{aligned}\]
+        That's the reduced SVD:
+        $$\bm X = \bm U \bm D \bm V^T$$
+        where $\bm U \in \mathbb R^{N \times p}$ with orthonormal columns, $\bm D \in \mathbb R^{p \times p}$ diagonal with positive entries, and $\bm V \in \mathbb R^{p \times p}$ orthogonal.
+
+
+
+\end{itemize}
+
+
+In regression, we usually use reduced SVD, and $\bm U \bm U^T = \bm H \ne \bm I$, but $\bm U^T \bm U = \bm I$.
+For $\bm y \in \mathbb R^N$, $\bm U^T \bm y $ map $\bm y$ from $\mathbb R^N$ to $\mathbb R^p$, which is the coefficients in the basis of columns of $\bm U$.
+And $\bm U \bm U^T \bm y$ project $\bm y$ onto the column space of $\bm X$.
+
+
+
 \subsection{Multiple testing in forward selection}
 ESL page 60:
 \begin{quote}
@@ -271,6 +323,16 @@ and is equivalent to
     &\text{subject to } \sum_{j=1}^p \beta_j^2 \le t
 \end{align*}
 And there is a one-to-one correspondence between $\lambda$ and $t$.
+
+\subsubsection{How to use ridge regression}
+Apparently, ridge regression is not equivariant under scaling of the inputs.
+For example, using OLS, measuring $x$ in meters or in centimeters will not change the predictions, since the latter coefficients will just 100 times of the first.
+However, in ridge regression, the penalty term $\lambda \sum_{j=1}^p \beta_j^2$ will be affected by the scale of $x_j$.
+Which means, using centimeters instead of meters will make the penalty on $\beta_j$ 10000 times larger, leading to different solutions.
+Thus, it's important to standardize the features (zero mean and unit variance) before applying ridge.
+
+Usually, we calculate $\mu$ and $\sigma$ from training set, and use them to standardize both training and test sets.
+Scaler can be regarded as part of the model, not data cleaning!
 \subsubsection{Equivalence of two forms}
 First, take a review of \textbf{KKT conditions}.
 
@@ -330,11 +392,64 @@ Then, $\beta(\lambda)$ is also the solution of constrained form with $t = t(\lam
     \item If $\| \beta(t) \|_2^2 = t$, the boundary is effective, correspond to some $\alpha > 0$, and $\lambda = \alpha$.
 \end{itemize}
 
-\subsection{Bayesian view}
+\subsubsection{Bayesian view}
+
+Assume prior $\bm \beta \sim \mathcal N(0, \tau^2 \bm I)$, and likelihood $\bm Y \sim \mathcal N(\bm X \beta, \sigma^2 \bm I)$.
+Then the posterior is:
+\begin{align*}
+    p(\beta | \bm Y) &\propto p(\bm Y | \beta) p(\beta) \\
+    &\propto \exp \left( -\frac{1}{2 \sigma^2} \| \bm Y - \bm X \beta \|_2^2 \right) \exp \left( -\frac{1}{2 \tau^2} \| \beta \|_2^2 \right) \\
+    &\propto \exp \left( -\frac{1}{2} \left( \frac{1}{\sigma^2} \| \bm Y - \bm X \beta \|_2^2 + \frac{1}{\tau^2} \| \beta \|_2^2 \right) \right)
+\end{align*}
+Maximizing the posterior is equivalent to minimizing the negative log-posterior. 
+The object is equivalent to ridge regression with $\lambda = \sigma^2 / \tau^2$.
+
+However, it seems that from bayesian view, we don't have a hard constrain on the size of $\beta$, just a prior that $\beta$ is likely to be small.
+But the constrained form of ridge regression directly enforce $\|\beta\|^2_2 \leq t$. Is it contradictory?
+
+No. Actually, the posterior distribution of $\beta$ still have infinite support, meaning that $\beta$ can still be large with small probability.
+Our MAP estimate of $\beta$ is the mode of the posterior, it's just a \textbf{point estimate}.
+This point estimator can still satisfy the hard constraint $\|\beta\|^2_2 \leq t$ for some $t$.
 
 
+\subsubsection{SVD in ridge}
 
+The solution of ridge regression is:
+$$
+\hat \beta^{\text{ridge}} = (\bm X^T \bm X + \lambda \bm I)^{-1} \bm X^T \bm Y
+$$
+When $\bm X^T \bm X$ is singular (not full rank), OLS estimator is not defined, and adding $\lambda \bm I$ ensures that $\bm X^T \bm X + \lambda \bm I$ is positive definite and invertible.
+    
+Take reduced SVD of $\bm X = \bm U \bm D \bm V^T$, $r = \text{Rank}(\bm X)$, where $\bm U \in \mathbb R^{N \times r}, \bm D \in \mathbb R^{r \times r}, \bm V \in \mathbb R^{p \times r}$.
+Then,
+\begin{align*}
+    \bm X^T \bm X + \lambda \bm I &= \bm V \bm D^T \bm U^T \bm U \bm D \bm V^T + \lambda \bm I \\
+    &= \bm V \bm D^T \bm D \bm V^T + \lambda \bm V \bm V^T \\
+    &= \bm V (\bm D^2  + \lambda \bm I) \bm V^T
+\end{align*}
+must be full rank and invertible.
 
+It's also easy to see that in the case of orthogonal inputs (i.e., $\bm X^T \bm X = \bm I$), the ridge estimates are just a scaled version of the least  squares estimates, that is
+$$\hat \beta^{\text{ridge}} = \frac{1}{1+\lambda} \hat \beta$$
+
+Further more,
+\begin{align*}
+    \bm X \beta^{\text{OLS}} &= \bm X (\bm X^T \bm X)^{-1} \bm X^T \bm Y \\
+    &= \bm U \bm D \bm V^T (\bm V \bm D^T \bm U^T \bm U \bm D \bm V^T)^{-1} \bm V \bm D^T \bm U^T \bm Y \\
+    &= \bm U \bm D \bm D^{-2} \bm D^T \bm U^T \bm Y \\
+    &= \bm U \bm U^T \bm Y
+\end{align*}
+and
+\begin{align*}
+    \bm X \beta^{\text{ridge}} &= \bm X (\bm X^T \bm X + \lambda \bm I)^{-1} \bm X^T \bm Y \\
+    &= \bm U \bm D \bm V^T (\bm V (\bm D^2 + \lambda \bm I) \bm V^T)^{-1} \bm V \bm D^T \bm U^T \bm Y \\
+    &= \bm U \bm D (\bm D^2 + \lambda \bm I)^{-1} \bm D^T \bm U^T \bm Y \\
+    &= \bm U \text{diag}\left( \frac{d_1^2}{d_1^2 + \lambda}, \frac{d_2^2}{d_2^2 + \lambda}, \ldots, \frac{d_r^2}{d_r^2 + \lambda} \right) \bm U^T \bm Y
+\end{align*}
+
+In both way, $\bm U^T \bm Y$ gets the coordinates of $\bm Y$ in the basis of columns of $\bm U$ (the principal components of $\bm X$),
+and then send back to original space using $\bm U$.
+But ridge regression shrink the coordinates.
 
 
 \newpage
