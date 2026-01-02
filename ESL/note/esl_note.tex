@@ -25,6 +25,8 @@
     urlcolor=cyan,
 }
 \let\bf\mathbf
+\DeclareMathOperator*{\argmin}{argmin}
+\DeclareMathOperator*{\argmax}{argmax}
 % --- Layout Settings ---
 \geometry{left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm}
 \setlength{\parindent}{0pt}   % No indentation for paragraphs (better for logs)
@@ -60,7 +62,16 @@
 \tableofcontents
 \clearpage
 
-% --- Section 1: Setup ---
+\section{Intro}
+
+While reading ESL, I felt the need to write things down—to record what I did not understand 
+and how I eventually worked through it.
+This note grew out of that process.
+It can be regarded as a personal supplymentary material of ESL.
+It covers concepts from analysis, linear algebra, optimization, 
+and computation, with a primary emphasis on statistics.
+
+\newpage
 \section{Chap 3: Linear Methods for Regression}
 
 \subsection{Confidence region for \texorpdfstring{$\hat{\beta}$}{beta hat}}
@@ -408,8 +419,11 @@ However, it seems that from bayesian view, we don't have a hard constrain on the
 But the constrained form of ridge regression directly enforce $\|\beta\|^2_2 \leq t$. Is it contradictory?
 
 No. Actually, the posterior distribution of $\beta$ still have infinite support, meaning that $\beta$ can still be large with small probability.
-Our MAP estimate of $\beta$ is the mode of the posterior, it's just a \textbf{point estimate}.
+Our MAP estimate of $\beta$ is the \textbf{mode} of the posterior, it's just a \textbf{point estimate}.
 This point estimator can still satisfy the hard constraint $\|\beta\|^2_2 \leq t$ for some $t$.
+
+In ridge regression, since the posterior is symmetric gaussian distribution, the mean and mode are same.
+However, in lasso and other priors, we usually use \textbf{mode}, \textbf{not mean} in common Bayes estimate.
 
 
 \subsubsection{SVD in ridge}
@@ -448,8 +462,152 @@ and
 \end{align*}
 
 In both way, $\bm U^T \bm Y$ gets the coordinates of $\bm Y$ in the basis of columns of $\bm U$ (the principal components of $\bm X$),
-and then send back to original space using $\bm U$.
-But ridge regression shrink the coordinates.
+and then send back to original space using $\bm U$,
+but ridge regression shrinks the coordinates.
+It's easy to see the directions with larger variance have lower effect, and those with small variance shrink most.
+
+Similar to OLS, the degree of freedom of ridge is defined as 
+$$
+\text{df}(\lambda) = \text{tr}(\bm H(\lambda)) = \sum_{j=1}^p \frac{d_j^2}{d_j^2 + \lambda}
+$$
+
+But actually it's because the definition of df is
+$$
+\text{df}(\bm{\hat y}) = \frac{1}{\sigma^2}\text{Cov}(\hat y_i, y_i)
+$$
+indicating how much the prediction $\hat y_i$ change if data $y_i$ have a tiny change.
+If the change is big, then model is 'reciting' the data point, model is complex, taking lots of df.
+If the change is small, meaning model is smooth, little affected by single data point. Model is simple, df is low.
+
+For those prediction is a linear transformation of $\bm y$ (OLS, ridge), the df is the trace of hat matrix.
+
+\subsubsection{Revisit PCA}
+For a matrix $\bm X \in \mathbb R^{n\times p}$, the mean is 
+$$
+\mu := \frac{1}{n}\bm X^T \bm 1 \in \mathbb R^{p}
+$$
+The centered matrix is 
+$$
+\bm X_c := \bm X - \bm 1  \mu^T
+$$
+centering is to put the center of data cloud in origin, otherwise PCs are not purely about variance, but also about the shift from origin.
+
+The SVD of $\bm X_c$ is $\bm X_c = \bm U \bm D \bm V^T$, and since it's centered, the covariance is
+$$
+\bm S = \frac{1}{n-1}\bm X_c^T \bm X_c = \frac{1}{n-1}\bm V \bm D^2 \bm V^T
+$$
+apparently, each column of $\bm V$ is the eigenvector of $\bm S$: $v_k = \bm V_{:,k} \in \mathbb R^p$, 
+and project origin $p$ dim feature into one dim.
+
+Thus, to get a $k$ dim representation, we need to take first $k$ column of $\bm V$, which is an encoder:
+$$\bm Z_k = \bm X_c \bm V_k = \bm U_k \bm \Sigma_k$$
+The first principal component direction $z_1 = \bm X_c v_1$ 
+has \textbf{largest} sample variance among all normalized linear combinations of the columns of $\bm X_c$,
+the variance is 
+\begin{align*}
+    \text{Var}(z_1) &= \frac{1}{n-1}z_1^T z_1 = \frac{1}{n-1}(\bm X_c v_1)^T(\bm X_c v_1)\\
+    &= \frac{1}{n-1}v_1^T \bm X_c^T \bm X_c v_1 \\
+    &= v_1^T \bm S v_1\\
+    &= v_1^T \lambda_1 v_1\\
+    &= \lambda_1 = \frac{\sigma_1^2}{n-1}
+\end{align*}
+So the variance of the first PC scores is exactly the top eigenvalue of the covariance matrix.
+
+And if we need to reconstruct the origin matrix, just decode in the same way:
+$$
+\bm {\hat X_c} = \bm Z_k \bm V_k^T, \quad \bm{\hat X} = \bm {\hat X_c} + \bm 1  \mu^T
+$$
+for a single sample:
+$$\hat x = \bm V_k z = \bm V_k (\bm V_k^T z)$$
+Thus, $\bm V$ is just orthogonal basis of the feature space. It maps centered data in to its space, and get the coordinates.
+
+From an auto encoder's view, it is
+$$\min_{\bm{W} \in \mathbb{R}^{p \times k}} \|\bm{X}_c - \bm{X}_c \bm{W} \bm{W}^\top \|_F^2 \quad \text{s.t.} \quad \bm{W}^\top \bm{W} = \bm{I}$$
+
+It seems we are talking about $\bm V$ all the time. What about $\bm U$? Well, he is the basis of the sample space. 
+Since we don't care about sample space that much, we just don't talk about it that much.
+
+
+\subsection{LASSO}
+
+\subsubsection{Subgradient and subdifferential}
+
+For a convex function $f: \mathbb R \to \mathbb R$, a number $g$ is a subgradient of $f$ at $x_0$ if for all $x$,
+$$f(x) \geq f(x_0) + g\cdot (x-x_0)$$ 
+So the line with slope $g$ touching $(x_0, f(x_0))$ lies below the whole function.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/subgradient.jpeg}
+    \caption{Illustration of subgradient.}
+\end{figure}
+
+The set of all such slopes is the subdifferential:
+$$\partial f(x_0) = \{g: f(x) \geq f(x_0) + g\cdot (x-x_0), \forall x \}$$
+Thus, for $f(x) = |x|$,
+$$
+\partial |x| =
+\begin{cases}
+\{ 1 \} & \text{if } x > 0 \\
+\{ -1 \} & \text{if } x < 0 \\
+[-1, 1] & \text{if } x = 0
+\end{cases}
+$$
+When $x=0$, the subdifferential is a interval!
+
+\subsubsection{Why shrink to zero}
+Consider LASSO objective function
+$$\min_{\beta}\|\bm Y - \bm X \bm \beta\|^2_2 + \lambda \|\bm \beta\|_1$$
+the solution $\hat{ \bm\beta}$ satisfies
+$$\bm 0 \in \partial J(\hat \beta)\in \mathbb R^p$$
+take one feature, and define $\bm r = \bm Y - \bm X \bm{\hat{\beta}}$
+$$0 \in -X_j^T \bm r + \lambda \partial \hat \beta_j$$
+which means, if $X_j^T \bm r \in [-\lambda, \lambda]$, $\hat \beta_j$ will be shrink to zero.
+
+What does a low value of $\mathbf{x}_j^T \mathbf{r}$ actually indicate? 
+It signifies that the feature has a low correlation with the current residual. 
+In other words, this feature is not useful for reducing the prediction error, 
+even if it contains 'new' or unique information.
+
+We must distinguish this from \textbf{feature-to-feature correlation }(multicollinearity):
+
+\begin{itemize}
+    \item \textbf{Redundancy (High Feature Correlation):} 
+    Consider predicting weight using height. 
+    Height in 'cm' and 'inches' are perfectly correlated. 
+    Lasso chooses only one because adding the second provides no \textit{additional} help in reducing the residual.
+    \item \textbf{Irrelevance (Low Residual Correlation):}
+    Consider the feature 'eating carrots'. This is uncorrelated with height (it brings independent information), 
+    but it has no relationship with weight. 
+    Since it cannot lower the residual ($\bm{x}_{carrots}^T \bm{r} \approx 0$), 
+    Lasso abandons it.
+    
+\end{itemize}
+
+\subsubsection{Soft thresholding}
+When design matrix $\bm X$ is orthogonal, i.e. $\bm X^T \bm X = \bm I$, 
+the OLS solution become $\bm{\hat \beta^{\text{OLS}}}=\bm X^T \bm Y$, and LASSO becomes
+\begin{align*}
+    \bm{\hat \beta^{\text{Lasso}}} &= \argmin_\beta \|\bm Y - \bm X \bm \beta \|^2_2 + \lambda \|\bm \beta\|_1 \\
+    &= \argmin_\beta \|\bm X^T \bm Y - \bm \beta \|^2_2 + \lambda \|\bm \beta\|_1 \\
+    &= \argmin_\beta \|\bm{\hat \beta^{\text{OLS}}} - \bm \beta \|^2_2 + \lambda \|\bm \beta\|_1 \\
+\end{align*}
+Let the gradient to zero,
+\begin{align*}
+    \frac{\partial}{\partial \bm \beta} &= \bm \beta - \bm{\hat \beta^{\text{OLS}}} + \lambda \cdot \text{sign}(\bm \beta) = 0 \\\\
+    \Rightarrow \quad \bm{\hat \beta^{\text{Lasso}}} &= \bm{\hat \beta^{\text{OLS}}} - \lambda \cdot \text{sign}(\bm{\hat \beta^{\text{Lasso}}})\\
+    &= \text{sign}(\bm{\hat \beta^{\text{OLS}}}) \max\{0, |\bm{\hat \beta^{\text{OLS}}}| - \lambda\} \\
+    &= S_\lambda(\bm{\hat \beta^{\text{OLS}}})
+\end{align*}
+Here, $S_\lambda$ is the soft-thresholding operator.
+
+\subsection{Least angle regression}
+
+
+
+
+
+
+
 
 
 \newpage
