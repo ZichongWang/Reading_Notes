@@ -1,0 +1,80 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.2 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{nty/global//global/global}
+    \entry{TibshiraniConvexOpt}{misc}{}
+      \name{author}{1}{}{%
+        {{hash=b14c3113cb378067f8d18e66d8503c10}{%
+           family={Tibshirani},
+           familyi={T\bibinitperiod},
+           given={Ryan},
+           giveni={R\bibinitperiod}}}%
+      }
+      \strng{namehash}{b14c3113cb378067f8d18e66d8503c10}
+      \strng{fullhash}{b14c3113cb378067f8d18e66d8503c10}
+      \strng{bibnamehash}{b14c3113cb378067f8d18e66d8503c10}
+      \strng{authorbibnamehash}{b14c3113cb378067f8d18e66d8503c10}
+      \strng{authornamehash}{b14c3113cb378067f8d18e66d8503c10}
+      \strng{authorfullhash}{b14c3113cb378067f8d18e66d8503c10}
+      \field{sortinit}{T}
+      \field{sortinithash}{9af77f0292593c26bde9a56e688eaee9}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{Carnegie Mellon University course website}
+      \field{note}{Accessed: 2026-01-03}
+      \field{title}{Convex Optimization (10-725/36-725)}
+      \field{year}{2019}
+      \verb{urlraw}
+      \verb https://www.stat.cmu.edu/~ryantibs/convexopt/
+      \endverb
+      \verb{url}
+      \verb https://www.stat.cmu.edu/~ryantibs/convexopt/
+      \endverb
+    \endentry
+    \entry{WikiGaussMarkov}{misc}{}
+      \name{author}{1}{}{%
+        {{hash=b6aea1a416c89509a7df1cbb69249cb6}{%
+           family={{Wikipedia contributors}},
+           familyi={W\bibinitperiod}}}%
+      }
+      \strng{namehash}{b6aea1a416c89509a7df1cbb69249cb6}
+      \strng{fullhash}{b6aea1a416c89509a7df1cbb69249cb6}
+      \strng{bibnamehash}{b6aea1a416c89509a7df1cbb69249cb6}
+      \strng{authorbibnamehash}{b6aea1a416c89509a7df1cbb69249cb6}
+      \strng{authornamehash}{b6aea1a416c89509a7df1cbb69249cb6}
+      \strng{authorfullhash}{b6aea1a416c89509a7df1cbb69249cb6}
+      \field{sortinit}{W}
+      \field{sortinithash}{4315d78024d0cea9b57a0c6f0e35ed0d}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{note}{Accessed: 2025-12-29}
+      \field{title}{Gauss--{M}arkov theorem --- {W}ikipedia{,} The Free Encyclopedia}
+      \field{year}{2025}
+      \verb{urlraw}
+      \verb https://en.wikipedia.org/wiki/Gauss%E2%80%93Markov_theorem
+      \endverb
+      \verb{url}
+      \verb https://en.wikipedia.org/wiki/Gauss%E2%80%93Markov_theorem
+      \endverb
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+

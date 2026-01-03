@@ -17,6 +17,8 @@
 \usepackage{siunitx}  % 用于对齐小数点
 \usepackage{multirow}
 \usepackage{url}
+\usepackage[style=numeric, backend=biber]{biblatex}
+\addbibresource{references.bib}
 \usepackage{hyperref}
 \hypersetup{
     colorlinks=true,
@@ -112,7 +114,7 @@ Why assume only know $\bm X$, but not $\bm y$?
 
 \begin{quote}
      Note that though $y_i$ as sample responses, are observable, 
-     the following statements and arguments including assumptions, proofs and the others assume under the only condition of knowing $\bm X_{i,j}$ but not $y_i$. \hfill --- \cite{wiki_gauss}
+     the following statements and arguments including assumptions, proofs and the others assume under the only condition of knowing $\bm X_{i,j}$ but not $y_i$. \hfill --- \cite{WikiGaussMarkov}
 \end{quote}
 
 We have a \textit{challenger} linear estimator $\tilde{\beta} = \bm C \bm y$, where $\bm C = (\bm X^T \bm X)^{-1} \bm X^T + \bm D$, a modification of OLS estimator.
@@ -528,7 +530,7 @@ It seems we are talking about $\bm V$ all the time. What about $\bm U$? Well, he
 Since we don't care about sample space that much, we just don't talk about it that much.
 
 
-\subsection{LASSO}
+\subsection{LASSO}\label{LASSO}
 
 \subsubsection{Subgradient and subdifferential}
 
@@ -553,6 +555,8 @@ $$
 \end{cases}
 $$
 When $x=0$, the subdifferential is a interval!
+
+Common way to compute Lasso is ISAT in \ref{ISTA}.
 
 \subsubsection{Why shrink to zero}
 Consider LASSO objective function
@@ -605,15 +609,164 @@ Here, $S_\lambda$ is the soft-thresholding operator.
 
 
 
+\newpage
+\section{Optimization methods}
+I read \cite{TibshiraniConvexOpt} for convex optimization methods.
+
+\subsection{Gradient descent}
+Assume $f$ is convex and differentiable, with $\text{dom}(f)=\mathbb R^n$,
+and additionally that $\nabla f$ is Lipschitz continuous with constant $L > 0$,
+$$
+\left\| \nabla f(x) - \nabla f(y)\right\|_2 \leq L \left\|x-y\right\|_2, \quad \forall x, y
+$$
+when the stepsize $t \leq 1/L$, we have 
+$$
+f(x^{(k)}) - f^* \le \frac{\|x^{(0)} - x^*\|^2}{2tk}
+$$
+indicating a convergence rate $\mathcal O(1/k)$. 
+In another word, to achieve precision $\epsilon$, needs about $\mathcal O(1/\epsilon)$ times of iteration.
+
+\subsubsection{Descent Lemma}
+Express the difference between two points
+$$f(\bm{y}) = f(\bm{x}) + \int_{0}^{1} \nabla f(\bm{x} + \tau(\bm{y} - \bm{x}))^T (\bm{y} - \bm{x}) \, d\tau$$
+then introduce the gradient at $\bm x$
+$$f(\bm{y}) = f(\bm{x}) + \nabla f(\bm{x})^T (\bm{y} - \bm{x}) + \int_{0}^{1} \left( \nabla f(\bm{x} + \tau(\bm{y} - \bm{x})) - \nabla f(\bm{x}) \right)^T (\bm{y} - \bm{x}) \, d\tau$$
+apply Cauchy-Schwarz Inequality,
+$$f(\bm{y}) \le f(\bm{x}) + \nabla f(\bm{x})^T (\bm{y} - \bm{x}) + \int_{0}^{1} \|\nabla f(\bm{x} + \tau(\bm{y} - \bm{x})) - \nabla f(\bm{x})\| \cdot \|\bm{y} - \bm{x}\| \, d\tau$$
+Using the $L$-Lipschitz property, we know $\|\nabla f(\bm{x} + \tau(\bm{y} - \bm{x})) - \nabla f(\bm{x})\| \le L \|\tau(\bm{y} - \bm{x})\| = L\tau \|\bm{y} - \bm{x}\|$. 
+Substituting this back:
+\begin{align*}
+    f(\bm{y}) &\le f(\bm{x}) + \nabla f(\bm{x})^T (\bm{y} - \bm{x}) + \int_{0}^{1} L\tau \|\bm{y} - \bm{x}\|^2 \, d\tau\\
+    &= f(\bm{x}) + \nabla f(\bm{x})^T (\bm{y} - \bm{x}) + \frac{1}{2} L \|\bm{y} - \bm{x}\|^2 
+\end{align*}
+
+\subsubsection{Convergence rate}
+In gradient descent update $\bm{x}^{(k+1)} = \bm{x}^{(k)} - t\nabla f(\bm{x}^{(k)})$ with step size $t \le 1/L$:
+\begin{align*}
+    f(\bm{x}^{(k+1)}) &\le f(\bm{x}^{(k)}) + \nabla f(\bm{x}^{(k)})^T (\bm{x}^{(k+1)} - \bm{x}^{(k)}) + \frac{L}{2} \|\bm{x}^{(k+1)} - \bm{x}^{(k)}\|^2\\
+    &= f(\bm{x}^{(k)}) - t\|\nabla f(\bm{x}^{(k)})\|^2 + \frac{Lt^2}{2}\|\nabla f(\bm{x}^{(k)})\|^2\\
+    &= f(\bm{x}^{(k)}) + (\frac{Lt^2}{2} - t)\|\nabla f(\bm{x}^{(k)})\|^2
+\end{align*}
+Since $t \le 1/L$, we have $-t + \frac{Lt^2}{2} \le -\frac{t}{2}$. Thus:
+$$f(\bm{x}^{(k+1)}) \le f(\bm{x}^{(k)}) - \frac{t}{2}\|\nabla f(\bm{x}^{(k)})\|^2$$
+which ensures \textbf{descent}.
+
+By the convexity of $f$, we have $f(\bm{x}^*) \ge f(\bm{x}^{(k)}) + \nabla f(\bm{x}^{(k)})^T (\bm{x}^* - \bm{x}^{(k)})$, which rearranges to:
+$$f(\bm{x}^{(k)}) - f^* \le \nabla f(\bm{x}^{(k)})^T (\bm{x}^{(k)} - \bm{x}^*)$$
+plus the previous one, and get
+$$f(\bm{x}^{(k+1)}) - f^* \le \nabla f(\bm{x}^{(k)})^T (\bm{x}^{(k)} - \bm{x}^*) - \frac{t}{2}\|\nabla f(\bm{x}^{(k)})\|^2$$
+
+What's next? We want to know the relationship between the descent of $f(\bm x^{(k)}-f^*)$, and the descent of $\bm{x}^{(k)} - \bm{x}^*$, so consider
+\begin{align*}
+    \|\bm{x}^{(k+1)} - \bm{x}^*\|^2 &= \|(\bm{x}^{(k)} - \bm{x}^*) - t\nabla f(\bm{x}^{(k)})\|^2\\
+    &= \|\bm{x}^{(k)} - \bm{x}^*\|^2 - 2t \nabla f(\bm{x}^{(k)})^T (\bm{x}^{(k)} - \bm{x}^*) + t^2 \|\nabla f(\bm{x}^{(k)})\|^2
+\end{align*}
+thus, 
+$$f(\bm{x}^{(k+1)}) - f^* \le \frac{1}{2t} \left( \|\bm{x}^{(k)} - \bm{x}^*\|^2 - \|\bm{x}^{(k+1)} - \bm{x}^*\|^2 \right)$$
+Summing from $i=0$ to $k-1$:
+$$\sum_{i=0}^{k-1} (f(\bm{x}^{(i+1)}) - f^*) \le \frac{1}{2t} \left( \|\bm{x}^{(0)} - \bm{x}^*\|^2 - \|\bm{x}^{(k)} - \bm{x}^*\|^2 \right) \le \frac{\|\bm{x}^{(0)} - \bm{x}^*\|^2}{2t}$$
+and we know $k(f(\bm{x}^{(k)}) - f^*) \le \sum_{i=0}^{k-1} (f(\bm{x}^{(i+1)}) - f^*)$, we get
+$$f(\bm{x}^{(k)}) - f^* \le \frac{\|\bm{x}^{(0)} - \bm{x}^*\|^2}{2tk}$$
+
+
+\subsubsection{Another view of GD}
+If we approximate the function around $\bm x$ by replacing the Hessian $\nabla^2 f(\bm{x})$ with $\frac{1}{t}\bm{I}$:
+$$\bm{x}^+ = \arg\min_{\bm{z}} \left( f(\bm{x}) + \nabla f(\bm{x})^T (\bm{z} - \bm{x}) + \frac{1}{2t} \|\bm{z} - \bm{x}\|_2^2 \right)$$
+where $t$ is the step size. Surprisingly, taking the derivative of the right-hand side with respect to $\bm{z}$ and setting it to zero gives the gradient descent update:
+$$\nabla f(\bm{x}) + \frac{1}{t}(\bm{z} - \bm{x}) = 0 \implies \bm{x}^+ = \bm{x} - t\nabla f(\bm{x})$$
+
+From this view, the standard gradient descent assume the Hessian matrix is same.
+
+
+
+
+\subsection{Subgradient descent}
+Here we assume function is $G$ Lipschitz continuous:  $|f(\bm{x}) - f(\bm{y})| \le G\|\bm{x}-\bm{y}\|_2$, which bounds the norm of subgradient $\|\bm{g}\|_2 \le G$.
+
+The subgradient update rule is $\bm{x}^{(k)} = \bm{x}^{(k-1)} - t_k \bm{g}^{(k-1)}$, where $\bm{g}^{(k-1)} \in \partial f(\bm{x}^{(k-1)})$.
+
+
+Analyze the squared distance to the optimal point $\bm{x}^*$:
+\begin{align*}
+    \|\bm{x}^{(k)} - \bm{x}^*\|_2^2 &= \|\bm{x}^{(k-1)} - t_k \bm{g}^{(k-1)} - \bm{x}^*\|_2^2\\
+& = \|\bm{x}^{(k-1)} - \bm{x}^*\|_2^2 - 2t_k (\bm{g}^{(k-1)})^T (\bm{x}^{(k-1)} - \bm{x}^*) + t_k^2 \|\bm{g}^{(k-1)}\|_2^2  
+\end{align*}
+
+From the definition of a subgradient: $(\bm{g}^{(k-1)})^T (\bm{x}^{(k-1)} - \bm{x}^*) \ge f(\bm{x}^{(k-1)}) - f(\bm{x}^*)$. 
+Substituting this and $\|\bm{g}\|_2 \le G$:
+\begin{equation*}
+    \|\bm{x}^{(k)} - \bm{x}^*\|_2^2 \le \|\bm{x}^{(k-1)} - \bm{x}^*\|_2^2 - 2t_k (f(\bm{x}^{(k-1)}) - f^*) + t_k^2 G^2 \tag{$\ast$} \label{eq:descent}
+\end{equation*}
+
+
+
+Summing from $i=1$ to $k$ and noting $\|\bm{x}^{(k)} - \bm{x}^*\|_2^2 \ge 0$:
+$$0 \le R^2 - 2\sum_{i=1}^k t_i (f(\bm{x}^{(i-1)}) - f^*) + G^2 \sum_{i=1}^k t_i^2$$
+where $R = \|\bm{x}^{(0)} - \bm{x}^*\|_2$. 
+Rearranging for the best iterate $f(\bm{x}_{best}^{(k)}) = \min_{i=0,\dots,k} f(\bm{x}^{(i)})$:
+$$f(\bm{x}_{best}^{(k)}) - f^* \le \frac{R^2 + G^2 \sum_{i=1}^k t_i^2}{2 \sum_{i=1}^k t_i}$$
+
+Thus, if $\sum_{i=1}^k t_i^2 < \infty$ and $\sum_{i=1}^k t_i = \infty$, subgradient can converge to optimal. 
+
+For a fixed step size $t_i = t$:
+$$f(\bm{x}_{best}^{(k)}) - f^* \le \frac{R^2}{2kt} + \frac{G^2 t}{2}$$
+To achieve an error of $\epsilon$, we set $t = \epsilon/G^2$. 
+This requires:
+$$k \ge \frac{R^2 G^2}{\epsilon^2}$$
+Thus, the subgradient method has a convergence rate of $\mathcal O(1/\epsilon^2)$, which is slower than the $\mathcal O(1/\epsilon)$ rate of gradient descent.
+
+When optimal value $f^*$ is known, minimizing equotion \eqref{eq:descent} get Polyak step sizes:
+$$
+t_k = \frac{f(\bm{x}^{(k-1)}) - f^*}{\|\bm{g}^{(k-1)}\|_2^2}
+$$
+
+
+\subsection{Proximal Gradient Descent}
+Although subgradient methods can solve non-differentiable optimization problems,
+it's slow $\mathcal O(1/\epsilon^2)$. Thus, we try write it as a composite function
+$$
+f(\bm x) = g(\bm x) + h(\bm x)
+$$
+where $g$ is convex and differentiable, $h$ is convex but not necessarily differentiable.
+
+For smooth $g$, use quadratic approximation, and for non-smooth $h$, just keep it.
+\begin{align*}
+    \bm{x}^{+} &= \underset{\bm{z}}{\text{argmin}} \left( g(\bm{x}) + \nabla g(\bm{x})^T(\bm{z}-\bm{x}) + \frac{1}{2t}\|\bm{z}-\bm{x}\|_2^2 \right) + h(\bm{z}) \\
+        & =\underset{\bm{z}}{\text{argmin}} \left( \frac{1}{2t} \| \bm{z} - (\bm{x} - t \nabla g(\bm{x})) \|_2^2 + h(\bm{z}) \right)
+\end{align*}
+The first term make $\bm z$ stay close to the gradient update of $g$, while also make $h$ small (second term).
+
+Define \textbf{proximal mapping}:
+$$ \text{prox}_{h, t}(\bm{v}) = \underset{\bm{z}}{\text{argmin}} \left( \frac{1}{2t} \|\bm{z} - \bm{v}\|_2^2 + h(\bm{z}) \right) $$
+then the procedure of proximal gradient descent is, for $k = 1, 2, 3, \dots$,
+$$ \bm{v} = \bm{x}^{(k-1)} - t_k \nabla g(\bm{x}^{(k-1)}) $$
+$$ \bm{x}^{(k)} = \text{prox}_{h, t_k}(\bm{v}) $$
+
+\subsubsection{ISTA}\label{ISTA}
+Iterative Shrinkage-Thresholding Algorithm (ISTA) is used for Lasso \ref{LASSO}.
+$$\min \frac{1}{2}\|\bm{y} - X\bm{\beta}\|_2^2 + \lambda \|\bm{\beta}\|_1$$
+$$ \text{prox}_{\lambda \|\cdot\|_1, t}(\bm{v}) = \underset{\bm{z}}{\text{argmin}} \left( \frac{1}{2t}\|\bm{z}-\bm{v}\|_2^2 + \lambda \|\bm{z}\|_1 \right) $$
+The solution is soft-thresholding operator, denote $S_{\lambda t}(\bm{v})$
+$$ [S_{\lambda t}(\bm{v})]_i = \begin{cases} v_i - \lambda t & \text{if } v_i > \lambda t \\ 0 & \text{if } |v_i| \le \lambda t \\ v_i + \lambda t & \text{if } v_i < -\lambda t \end{cases} $$
+
+In practice, iteratively do
+\begin{itemize}
+    \item Residual gradient update: $\bm{v} = \bm{\beta} + t X^T(\bm{y} - X\bm{\beta})$
+    \item Soft-thresholding truncate: $\bm{\beta}^{+} = S_{\lambda t}(\bm{v})$
+\end{itemize}
+
+
+
+
+
+
 
 
 
 
 
 \newpage
-\begin{thebibliography}{9}
-\bibitem{wiki_gauss}
-Wikipedia contributors, "Gauss–Markov theorem," \textit{Wikipedia, The Free Encyclopedia}, \url{https://en.wikipedia.org/wiki/Gauss%E2%80%93Markov_theorem} (accessed Dec 29, 2025).
-\end{thebibliography}
+
+\printbibliography
 
 \end{document}
