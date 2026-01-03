@@ -20,7 +20,6 @@
 \contentsline {subsubsection}{\numberline {2.7.1}Subgradient and subdifferential}{12}{subsubsection.2.7.1}%
 \contentsline {subsubsection}{\numberline {2.7.2}Why shrink to zero}{13}{subsubsection.2.7.2}%
 \contentsline {subsubsection}{\numberline {2.7.3}Soft thresholding}{14}{subsubsection.2.7.3}%
-\contentsline {subsection}{\numberline {2.8}Least angle regression}{14}{subsection.2.8}%
 \contentsline {section}{\numberline {3}Optimization methods}{15}{section.3}%
 \contentsline {subsection}{\numberline {3.1}Gradient descent}{15}{subsection.3.1}%
 \contentsline {subsubsection}{\numberline {3.1.1}Descent Lemma}{15}{subsubsection.3.1.1}%
@@ -29,3 +28,4 @@
 \contentsline {subsection}{\numberline {3.2}Subgradient descent}{17}{subsection.3.2}%
 \contentsline {subsection}{\numberline {3.3}Proximal Gradient Descent}{17}{subsection.3.3}%
 \contentsline {subsubsection}{\numberline {3.3.1}ISTA}{18}{subsubsection.3.3.1}%
+\contentsline {subsection}{\numberline {3.4}Stochastic gradient descent}{18}{subsection.3.4}%

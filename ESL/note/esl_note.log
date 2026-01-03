@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999995 (TeX Live 2023/Debian) (preloaded format=xelatex 2025.12.2)  3 JAN 2026 16:03
+This is XeTeX, Version 3.141592653-2.6-0.999995 (TeX Live 2023/Debian) (preloaded format=xelatex 2025.12.2)  3 JAN 2026 16:23
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -948,7 +948,7 @@ LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2022/08/05>
  ***********
 Package rerunfilecheck Info: File `esl_note.out' has not changed.
-(rerunfilecheck)             Checksum: A081432093060E6D70339567E3FB797F;4756.
+(rerunfilecheck)             Checksum: 3648C91258B85AEA8AB347E665BD1846;4781.
 Package logreq Info: Writing requests to 'esl_note.run.xml'.
 \openout1 = `esl_note.run.xml'.
 
