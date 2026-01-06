@@ -613,6 +613,86 @@ Here, $S_\lambda$ is the soft-thresholding operator.
 \section{Optimization methods}
 I read \cite{TibshiraniConvexOpt} for convex optimization methods.
 
+\subsection{Norms of matrices}
+Mathematically, a function $f: \mathbb{K}^{m \times n} \to \mathbb{R}$ is a matrix norm if for all matrices 
+$\bm{A}, \bm{B} \in \mathbb{K}^{m \times n}$ and scalars $\alpha$, it satisfies:
+\begin{itemize}
+    \item Non-negativity: $\|\bm{A}\| \ge 0$ (and $\|\bm{A}\| = 0 \iff \bm{A} = \bm{0}$).
+    \item Scalar Property: $\|\alpha \bm{A}\| = |\alpha| \|\bm{A}\|$.
+    \item Triangle Inequality: $\|\bm{A} + \bm{B}\| \le \|\bm{A}\| + \|\bm{B}\|$.
+\end{itemize}
+
+Most useful matrix norms also satisfy the submultiplicative property:
+$$\|\bm{A}\bm{B}\| \le \|\bm{A}\| \|\bm{B}\|$$
+
+Two kinds of norms: Induced (operator) norms and Frobenius norm (not induced).
+\subsubsection{Induced norm}
+An \textbf{induced norm} is defined by how much the matrix $\bm{A}$ stretches a vector $\bm{x}$ 
+under a specific vector $p$-norm.
+$$\|\bm{A}\|_p = \max_{\|\bm{x}\|_p = 1} \|\bm{A}\bm{x}\|_p$$
+The "Big Three" Induced Norms
+\begin{itemize}
+    \item $L_1$ Norm (Maximum Column Sum):$$\|\bm{A}\|_1 = \max_{1 \le j \le n} \sum_{i=1}^m |a_{ij}|$$
+    \item $L_\infty$ Norm (Maximum Row Sum):$$\|\bm{A}\|_\infty = \max_{1 \le i \le m} \sum_{j=1}^n |a_{ij}|$$
+    \item $L_2$ Norm (Spectral Norm):$$\|\bm{A}\|_2 = \sqrt{\lambda_{\max}(\bm{A}^H \bm{A})} = \sigma_{\max}(\bm{A})$$where $\sigma_{\max}$ is the largest singular value of $\bm{A}$.
+\end{itemize}
+Here are proofs
+\begin{itemize}
+    \item \textbf{$L_\infty$ Norm (Maximum Row Sum)}
+
+    \textbf{Step 1: Upper Bound.} For any vector $\bm{x}$ such that $\|\bm{x}\|_\infty = 1$, we have $|x_j| \le 1$ for all $j$. For any row $i$:
+    \begin{equation*}
+    |(\bm{A}\bm{x})_i| = \left| \sum_{j=1}^n a_{ij} x_j \right| \le \sum_{j=1}^n |a_{ij}| |x_j| \le \sum_{j=1}^n |a_{ij}|
+    \end{equation*}
+    Thus, $\|\bm{A}\bm{x}\|_\infty = \max_i |(\bm{A}\bm{x})_i| \le \max_i \sum_{j=1}^n |a_{ij}|$.
+    
+    \textbf{Step 2: Attainability.} Let $k$ be the row index where $\sum_j |a_{ij}|$ is maximized. Define $\bm{x}$ such that $x_j = \text{sgn}(a_{kj})$ if $a_{kj} \neq 0$ and $x_j = 1$ otherwise. Then $\|\bm{x}\|_\infty = 1$ and $|(\bm{A}\bm{x})_k| = \sum_j |a_{kj}|$, achieving the bound.
+
+    \item \textbf{$L_1$ Norm (Maximum Column Sum)}
+    
+    \textbf{Step 1: Upper Bound.} For $\|\bm{x}\|_1 = 1$, we expand the $L_1$ norm of the product:
+    \begin{equation*}
+    \|\bm{A}\bm{x}\|_1 = \sum_{i=1}^m \left| \sum_{j=1}^n a_{ij} x_j \right| \le \sum_{i=1}^m \sum_{j=1}^n |a_{ij}| |x_j| = \sum_{j=1}^n |x_j| \left( \sum_{i=1}^m |a_{ij}| \right)
+    \end{equation*}
+    here, for finite and non-negative summation, we can always switch the order.
+
+    Since $\sum_i |a_{ij}| \le \max_j \sum_i |a_{ij}|$, we have:
+    \begin{equation*}
+    \|\bm{A}\bm{x}\|_1 \le \left( \max_{1 \le j \le n} \sum_{i=1}^m |a_{ij}| \right) \sum_{j=1}^n |x_j| = \max_{1 \le j \le n} \sum_{i=1}^m |a_{ij}|
+    \end{equation*}
+    
+    \textbf{Step 2: Attainability.} Let $k$ be the index of the column with the maximum absolute sum. Set $\bm{x} = \bm{e}_k$ (the $k$-th canonical basis vector). Then $\|\bm{x}\|_1 = 1$ and $\|\bm{A}\bm{x}\|_1 = \sum_i |a_{ik}|$, achieving the bound.
+
+    \item \textbf{$L_2$ Norm (Spectral Norm)}
+
+    \textbf{Step 1: Upper Bound.} Consider the square of the norm $\|\bm{A}\bm{x}\|_2^2 = \bm{x}^H \bm{A}^H \bm{A} \bm{x}$. Let $\bm{M} = \bm{A}^H \bm{A}$, which is Hermitian and positive semi-definite. By the spectral theorem, for any $\bm{x}$ with $\|\bm{x}\|_2 = 1$:
+    \begin{equation*}
+    \bm{x}^H \bm{M} \bm{x} \le \lambda_{\max}(\bm{M}) \|\bm{x}\|_2^2 = \lambda_{\max}(\bm{A}^H \bm{A})
+    \end{equation*}
+    Taking the square root, we find $\|\bm{A}\bm{x}\|_2 \le \sqrt{\lambda_{\max}(\bm{A}^H \bm{A})}$.
+    
+    \textbf{Step 2: Attainability.} Choose $\bm{x}$ to be the normalized eigenvector of $\bm{A}^H \bm{A}$ corresponding to $\lambda_{\max}$. Then $\bm{x}^H \bm{A}^H \bm{A} \bm{x} = \bm{x}^H (\lambda_{\max} \bm{x}) = \lambda_{\max} \|\bm{x}\|_2^2 = \lambda_{\max}$, achieving the bound.
+\end{itemize}
+
+\subsubsection{Frobenius norm}
+This is the most common entry-wise norm, analogous to the Euclidean distance for vectors.
+$$\|\bm{A}\|_F = \sqrt{\sum_{i=1}^m \sum_{j=1}^n |a_{ij}|^2} = \sqrt{\text{tr}(\bm{A}^H \bm{A})}$$
+Where $\text{tr}$ is the trace and $\bm{A}^H$ is the conjugate transpose. 
+It is also equal to the square root of the sum of the squares of the singular values:
+$$\|\bm{A}\|_F = \sqrt{\sum_{i=1}^{\min(m,n)} \sigma_i^2}$$
+
+\subsubsection{Schatten norm}
+Schatten norms apply a $p$-norm to the singular values $\sigma_i$ of the matrix. 
+Let $\sigma(\bm{A})$ be the vector of singular values:
+$$\|\bm{A}\|_p = \left( \sum_{i=1}^{\min(m,n)} \sigma_i^p \right)^{1/p}$$
+\begin{itemize}
+    \item $p=1$ (Nuclear Norm): $\|\bm{A}\|_* = \sum \sigma_i$. Often used in machine learning for rank minimization.
+    \item $p=2$ (Frobenius Norm): $\|\bm{A}\|_F = \sqrt{\sum \sigma_i^2}$.
+    \item $p=\infty$ (Spectral Norm): $\|\bm{A}\|_2 = \sigma_{\max}$.
+\end{itemize}
+
+
+
 \subsection{Gradient descent}
 Assume $f$ is convex and differentiable, with $\text{dom}(f)=\mathbb R^n$,
 and additionally that $\nabla f$ is Lipschitz continuous with constant $L > 0$,
@@ -741,6 +821,11 @@ $$ \text{prox}_{h, t}(\bm{v}) = \underset{\bm{z}}{\text{argmin}} \left( \frac{1}
 then the procedure of proximal gradient descent is, for $k = 1, 2, 3, \dots$,
 $$ \bm{v} = \bm{x}^{(k-1)} - t_k \nabla g(\bm{x}^{(k-1)}) $$
 $$ \bm{x}^{(k)} = \text{prox}_{h, t_k}(\bm{v}) $$
+The name of \textit{proximal} comes from $\left\|\bm z - \bm v\right\|$ term, 
+it makes the new solution $\bm z$ near input point $\bm v$
+
+Proximal gradient descent have same convergence rate as gradient descent,
+but need to consider prox cost...
 
 \subsubsection{ISTA}\label{ISTA}
 Iterative Shrinkage-Thresholding Algorithm (ISTA) is used for Lasso \ref{LASSO}.

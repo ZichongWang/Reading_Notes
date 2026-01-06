@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999995 (TeX Live 2023/Debian) (preloaded format=xelatex 2025.12.2)  3 JAN 2026 16:23
+This is XeTeX, Version 3.141592653-2.6-0.999995 (TeX Live 2023/Debian) (preloaded format=xelatex 2025.12.2)  4 JAN 2026 15:55
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -925,7 +925,7 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 ] [4] [5] [6] [7] [8] [9] [10] [11]
 File: figures/subgradient.jpeg Graphic file (type bmp)
 <figures/subgradient.jpeg>
- [12] [13] [14] [15] [16] [17] [18]
+ [12] [13] [14] [15] [16] [17] [18] [19] [20]
 
 Package fontspec Warning: Font "FandolFang-Regular" does not contain requested
 (fontspec)                Script "CJK".
@@ -942,24 +942,24 @@ Package fontspec Info: Font family 'FandolFang-Regular(0)' created for font
 (fontspec)             <->"[FandolFang-Regular.otf]/OT:language=dflt;"
 (fontspec)             - 'small caps'  (m/sc) with NFSS spec.: 
 
-[19] (./esl_note.aux)
+[21] (./esl_note.aux)
  ***********
 LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2022/08/05>
  ***********
 Package rerunfilecheck Info: File `esl_note.out' has not changed.
-(rerunfilecheck)             Checksum: 3648C91258B85AEA8AB347E665BD1846;4781.
+(rerunfilecheck)             Checksum: 76A09AD193D22D9BB3F1283C68AA5E0A;5338.
 Package logreq Info: Writing requests to 'esl_note.run.xml'.
 \openout1 = `esl_note.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 28988 strings out of 474878
- 643568 string characters out of 5762516
+ 28989 strings out of 474878
+ 643584 string characters out of 5762516
  1935627 words of memory out of 5000000
- 50706 multiletter control sequences out of 15000+600000
+ 50707 multiletter control sequences out of 15000+600000
  569607 words of font info for 100 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
  93i,15n,97p,723b,4907s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on esl_note.pdf (19 pages).
+Output written on esl_note.pdf (21 pages).
