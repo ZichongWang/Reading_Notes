@@ -605,6 +605,68 @@ Let the gradient to zero,
 Here, $S_\lambda$ is the soft-thresholding operator.
 
 
+\newpage
+\section{Chap 4: Linear methods for classification}
+
+Generally, there are two ways to model classification problem: hard boundary $\delta_k(x)$ or posterior probabilities $\text{Pr}(G = k \mid X =x)$.
+If eithor $\delta_k(x)$ or $\text{Pr}(G = k \mid X =x)$ are linear in $x$, then the dicision boundary is linear.
+
+
+\subsection{Linear Regression of an Indicator Matrix}
+Let $\bm{Y}$ be the $N \times K$ indicator matrix where each row has exactly one $1$. Let $\bm{X}$ be the $N \times (p+1)$ design matrix, including a leading column of ones for the intercept.
+
+We fit a linear model to \textbf{each column} of $\bm{Y}$ simultaneously using Least Squares. The objective is to minimize the Frobenius norm of the residual matrix:
+\[
+\min_{\bm{B}} \|\bm{Y} - \bm{X}\bm{B}\|_F^2
+\]
+The solution $\hat{\bm{B}}$ is given by the normal equation:
+\[
+\hat{\bm{B}} = (\bm{X}^T\bm{X})^{-1}\bm{X}^T\bm{Y}
+\]
+For a new input vector $\bm{x} = (1, x_1, \dots, x_p)^T$, the vector of fitted values (class scores) is:
+\[
+\hat{\bm{f}}(\bm{x})^T = \bm{x}^T \hat{\bm{B}} = \bm{x}^T (\bm{X}^T\bm{X})^{-1}\bm{X}^T\bm{Y}
+\]
+
+\textbf{Proof: Why $\sum \hat{f}_k(\bm{x}) = 1$}
+
+We want to calculate the sum of the predicted values across all $K$ classes. Let $\bm{1}_K$ be a column vector of $K$ ones, and $\bm{1}_N$ be a column vector of $N$ ones.
+
+The sum can be written as the dot product of the prediction vector and $\bm{1}_K$:
+\[
+\sum_{k=1}^K \hat{f}_k(\bm{x}) = \hat{\bm{f}}(\bm{x})^T \bm{1}_K = \bm{x}^T (\bm{X}^T\bm{X})^{-1}\bm{X}^T \underbrace{(\bm{Y} \bm{1}_K)}_{\text{step (a)}}
+\]
+
+\textbf{Step (a):} Since each row of the indicator matrix $\bm{Y}$ sums to exactly 1 (one-hot encoding), multiplying $\bm{Y}$ by $\bm{1}_K$ results in a vector of ones:
+\[
+\bm{Y} \bm{1}_K = \bm{1}_N
+\]
+Substituting this back:
+\[
+\sum_{k=1}^K \hat{f}_k(\bm{x}) = \bm{x}^T \underbrace{(\bm{X}^T\bm{X})^{-1}\bm{X}^T \bm{1}_N}_{\text{step (b)}}
+\]
+
+\textbf{Step (b):} The term $(\bm{X}^T\bm{X})^{-1}\bm{X}^T \bm{1}_N$ represents the OLS regression coefficients obtained when regressing the vector $\bm{1}_N$ onto $\bm{X}$. 
+Since $\bm{X}$ contains a column of ones (the intercept), the constant vector $\bm{1}_N$ lies perfectly in the column space of $\bm{X}$. The coefficients that strictly reconstruct $\bm{1}_N$ are $1$ for the intercept and $0$ for all other features. Let $\bm{e}_1 = (1, 0, \dots, 0)^T$. Then:
+\[
+(\bm{X}^T\bm{X})^{-1}\bm{X}^T \bm{1}_N = \bm{e}_1
+\]
+
+\textbf{Conclusion:}
+Since the input vector is $\bm{x} = (1, x_1, \dots, x_p)^T$, its dot product with $\bm{e}_1$ picks out the first element (the intercept):
+\[
+\sum_{k=1}^K \hat{f}_k(\bm{x}) = \bm{x}^T \bm{e}_1 = 1
+\]
+
+
+\textbf{Masking effect}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{figures/masking_effect_comparison.pdf}
+\end{figure}
+
+
+
 
 
 
